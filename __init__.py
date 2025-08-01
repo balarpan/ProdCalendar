@@ -5,13 +5,17 @@
 Пример использования:
 
 >>> from ProdCalendar import ProdCalendar
->>> from datetime import date, time, timedelta, datetime
+>>> from datetime import date, timedelta, datetime
 >>> 
 >>> workCalendar = ProdCalendar(cache_dir='.cache/', cacheTTL=timedelta(days=5))
 >>> dt = datetime(2025, 12, 31)
 >>> workCalendar.isWorkDay(dt)  # -> False
 False
 >>> workCalendar.isHoliday(dt)  # -> True
+True
+
+>> customCalendar = ProdCalendar(cache_dir='.cache/', overrideDates={date(2025, 12, 31): 0})
+>> customCalendar.isWorkDay(date(2025, 12, 31))  # -> True
 True
 """
 
@@ -55,15 +59,25 @@ class ProdCalendar:
             overrideDates (dict[datetime.date, int]): переназначение отдельных дат. Необходимо передать массив в котором ключом
                                             является дата (``datetime.date``), а значением ``int`` (0 - рабочий день, 1 - выходной)
         """
-        self.isCache = cache
+        self.isCache = bool(cache)
         self.cache_dir = cache_dir
         self.cacheTTL = cacheTTL
+        if len(overrideDates):
+            assert all(type(day) is date for day in overrideDates.keys()), "Dictionary key must be a datetime.date object"
         self.overrided_dates = overrideDates
         if self.isCache and preload_year:
             self.cache_year(preload_year, forced=False)
 
     def isWorkDay(self, day: date) -> bool:
-        """Проверяет, что переданная дата - это рабочий день"""
+        """Проверяет, что переданная дата - это рабочий день.
+
+        Args:
+            day (datetime.date): Проверяемая дата.
+
+        Returns:
+            bool: ``True``, если переданная дата - это рабочий день.
+        """
+        assert type(day) is date, "Parameter must be a datetime.date object"
         if day in self.overrided_dates:
             return not bool(self.overrided_dates[day])
         cal_year = self._getYear(day.year)
@@ -76,7 +90,14 @@ class ProdCalendar:
         return True
 
     def isHoliday(self, day: date) -> bool:
-        """Проверяет, что переданная дата - это **выходной** или **праздничный** день"""
+        """Проверяет, что переданная дата - это **выходной** или **праздничный** день.
+
+        Args:
+            day (datetime.date): Проверяемая дата.
+
+        Returns:
+            bool: ``True``, если переданная дата - это нерабочий день.
+        """
         return not self.isWorkDay(day)
 
     def _getYear(self, year: int) -> dict:

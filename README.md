@@ -18,7 +18,7 @@ dt = datetime(2025, 12, 31)
 workCalendar.isWorkDay(dt)  # -> False
 workCalendar.isHoliday(dt)  # -> True
 
-customCalendar = ProdCalendar(cache_dir='.cache/', overrideDates={datetime(2025, 12, 31): 0})
+customCalendar = ProdCalendar(cache_dir='.cache/', overrideDates={date(2025, 12, 31): 0})
 customCalendar.isWorkDay(datetime(2025, 12, 31))  # -> True
 True
 ```
@@ -66,4 +66,5 @@ True
 Для таких случаев целесообразно задавать чрезвычайно большие значения TTL, для избежания повторного выкачивания календаря за прошедший год.
 
 
+---
 Copyright ©2025
